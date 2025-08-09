@@ -1,1 +1,422 @@
-# Red-Burgers
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RED BURGERS — Pedido Online</title>
+  <meta name="description" content="Haz tu pedido online en RED BURGERS. Selecciona cantidades, añade al carrito y pide por WhatsApp." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ====== Mobile-first, fondo negro, íconos blancos ====== */
+    :root{
+      --bg:#000;              /* fondo negro */
+      --paper:#0f0f10;        /* tarjetas oscuro suave */
+      --ink:#f2f2f3;          /* texto principal claro */
+      --muted:#a3a7b0;        /* texto secundario */
+      --brand:#b00020;        /* rojo para títulos */
+      --line:#1f2126;         /* bordes */
+      --radius:18px;
+      --shadow:0 10px 28px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{font-family:'Poppins',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+    img{display:block;max-width:100%}
+    button{font-family:inherit}
+
+    /* ====== Top bar ====== */
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.75);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:560px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .icon-btn{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:transparent;color:#fff;display:grid;place-items:center;box-shadow:none}
+    .brand-badge{width:40px;height:40px;border-radius:999px;background:#111;border:1px solid var(--line);overflow:hidden}
+    .brand-badge img{width:100%;height:100%;object-fit:contain}
+    .cart-btn{position:relative}
+    .cart-count{position:absolute;top:-6px;right:-6px;background:#fff;color:#000;font-size:11px;min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;padding:0 5px;border:2px solid #000}
+
+    /* ====== Hero ====== */
+    .hero{max-width:560px;margin:0 auto;padding:14px 16px 0}
+    .hero-logo{width:92px;height:92px;border-radius:999px;border:4px solid #111;overflow:hidden;margin:-30px auto 8px;background:#111;box-shadow:var(--shadow)}
+    .hero-logo img{width:100%;height:100%;object-fit:contain}
+    .title{font-weight:700;text-align:center;font-size:22px}
+    .rating{display:flex;gap:6px;align-items:center;justify-content:center;color:#fff}
+    .meta{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;flex-wrap:wrap}
+    .tagline{color:var(--muted);text-align:center;margin-top:6px}
+
+    /* ====== Secciones y tarjetas ====== */
+    .container{max-width:560px;margin:12px auto 120px;padding:0 12px}
+    .section{margin:16px 0}
+    .section h3{font-size:18px; text-align:center; margin:10px 4px;color:var(--brand)}
+
+    /* Tarjeta vertical: imagen, nombre, desc, precio */
+.item {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  /* Modificaciones para centrar */
+  max-width: 420px;       /* ancho máximo para que no se pegue a los bordes */
+  margin-left: auto;      /* centra horizontalmente */
+  margin-right: auto;
+  align-items: center;    /* centra contenido horizontalmente */
+  text-align: center;     /* centra texto */
+}
+    .item + .item{margin-top:10px}
+/* Imagen de producto en la tarjeta */
+.thumb{
+  width: 100%;
+  max-height: 120px;   /* reduce la altura máxima */
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+.thumb img{
+  width: auto;          /* mantiene proporción natural */
+  height: auto;         /* mantiene proporción natural */
+  max-width: 100%;      /* que no se pase del ancho */
+  max-height: 120px;    /* coincide con el contenedor */
+  object-fit: contain;  /* asegura que no se recorte */
+ /* Modificaciones para centrar */
+  max-width: 420px;       /* ancho máximo para que no se pegue a los bordes */
+  margin-left: auto;      /* centra horizontalmente */
+  margin-right: auto;
+  align-items: center;    /* centra contenido horizontalmente */
+  text-align: center;     /* centra texto */
+}
+    .name{font-size:15px;font-weight:800;letter-spacing:.2px}
+    .desc{font-size:12px;color:var(--muted);line-height:1.4}
+    .price-qty{display:flex;align-items:center;justify-content:space-between}
+    .price{font-size:14px;font-weight:700}
+    .qty{display:flex;align-items:center;gap:8px}
+    .qty input{width:64px;padding:8px;border-radius:10px;border:1px solid var(--line);background:#0b0b0d;color:var(--ink);text-align:center}
+
+    /* ====== Botón flotante único: Añadir (amarillo opaco que se aclara con la cantidad) ====== */
+    .fab-add{position:fixed;right:14px;bottom:14px;border:0;border-radius:999px;padding:14px 18px;font-weight:900;box-shadow:var(--shadow);cursor:pointer;color:#111;background:hsl(48, 90%, 58%);} /* base */
+    .fab-add:disabled{opacity:.5;cursor:not-allowed}
+
+    /* ====== Carrito ====== */
+    dialog.cart{border:1px solid var(--line);border-radius:16px;padding:0;max-width:560px;width:94vw;background:#111;color:#fff}
+    .cart-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .cart-items{max-height:55vh;overflow:auto}
+    .cart-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #1b1c20}
+    .cart-row img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
+    .line .label{font-weight:700;font-size:14px}
+    .line .meta{font-size:12px;color:var(--muted)}
+    .controls{display:flex;align-items:center;gap:8px}
+    .controls button{border:1px solid var(--line);background:#0b0b0d;color:#fff;border-radius:10px;padding:6px 10px}
+    .cart-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-top:1px solid var(--line)}
+    .cart-foot .total{font-weight:800}
+    .cart-foot .send{background:#25D366;color:#062d1c;border:0;border-radius:12px;padding:12px 16px;font-weight:900}
+
+    /* Campos de cliente */
+    .form{padding:12px 16px;display:grid;gap:10px}
+    .form input, .form textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0b0b0d;color:#fff}
+    .form textarea{min-height:60px;resize:vertical}
+
+    /* ====== Util ====== */
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <!-- ====== Topbar ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="icon-btn" aria-label="Menú">☰</button>
+      <div class="brand-badge"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="Logo RED BURGERS"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="searchBtn" class="icon-btn" aria-label="Buscar">🔍</button>
+        <button id="cartBtn" class="icon-btn cart-btn" aria-label="Carrito">🛒<span id="cartCount" class="cart-count hidden">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== Hero ====== -->
+  <section class="hero">
+    <div class="hero-logo"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="RED BURGERS"></div>
+    <div class="title">RED BURGERS</div>
+    <div class="rating"><span>⭐</span><strong>5</strong><span>(7)</span></div>
+    <div class="meta">🟢 Abierto • 12:00 PM–11:00 PM • 📍 Calle Interior C #3, Santo Domingo</div>
+    <div class="tagline">Smash & more</div>
+  </section>
+
+  <!-- ====== Buscador ====== -->
+  <div id="searchBox" class="container hidden" style="padding-top:0">
+    <input id="search" type="search" placeholder="Buscar en el menú…" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0b0b0d;color:#fff" />
+  </div>
+
+  <!-- ====== Menú ====== -->
+  <main id="menu" class="container"></main>
+
+  <!-- ====== Botón flotante único ====== -->
+  <button id="addAll" class="fab-add" title="Añadir seleccionados al carrito">Añadir</button>
+
+  <!-- ====== Carrito ====== -->
+  <dialog id="cartModal" class="cart">
+    <div class="cart-head">
+      <strong>Tu carrito</strong>
+      <button id="closeCart" class="icon-btn" style="border:1px solid var(--line);background:transparent;color:#fff">✕</button>
+    </div>
+
+    <div class="form">
+      <input id="cliNombre" placeholder="Nombre" />
+      <input id="cliDireccion" placeholder="Dirección" />
+      <textarea id="cliNota" placeholder="Nota"></textarea>
+    </div>
+
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total" id="cartTotal">Total: $0.00</div>
+      <button id="sendWAModal" class="send">Pedir por WhatsApp</button>
+    </div>
+  </dialog>
+
+  <script>
+    // ================== CONFIG ==================
+    const PHONE = '18094862675';
+    const CURRENCY = '$';
+
+    // ================== DATA (tus productos, SIN los de Shark) ==================
+    const SECTIONS = [
+      { id:'pechuga', title:'Pechuga a la plancha' },
+      { id:'burritos', title:'Burritos' },
+      { id:'hotdog', title:'Hot Dog' },
+      { id:'hamburguesas', title:'Hamburguesas' },
+      { id:'bebidas', title:'Bebidas' },
+    ];
+
+    const ITEMS = [
+      // Pechuga
+      {id:'p1',cat:'pechuga',name:'Pechuga a la plancha con papas + ensalada',desc:'Pechuga sellada a la plancha con guarnición.',price:400,img:'https://i.postimg.cc/VvWb9WV3/Chat-GPT-Image-8-ago-2025-06-01-19-p-m.png'},
+      {id:'p2',cat:'pechuga',name:'Pechuga a la crema + papas + ensalada',desc:'Salsa cremosa, papas fritas y ensalada.',price:500,img:'https://i.postimg.cc/WbKsWkcK/Plato-delicioso-con-pollo-y-ensalada.png'},
+      {id:'p3',cat:'pechuga',name:'Pechuga a la plancha con salsa bbq, vegetales salteados, fritos o papas fritas',desc:'A tu elección: vegetales, fritos o papas.',price:500,img:'https://i.postimg.cc/NfbH5bTX/Chat-GPT-Image-8-ago-2025-06-01-15-p-m.png'},
+
+      // Burritos
+      {id:'b1',cat:'burritos',name:'Burrito de pollo',desc:'Relleno de pollo, con papas incluidas.',price:350,img:'https://i.postimg.cc/YqtFrT4k/Chat-GPT-Image-8-ago-2025-06-01-02-p-m.png'},
+      {id:'b2',cat:'burritos',name:'Burrito de res',desc:'Relleno de res, con papas incluidas.',price:350,img:'https://i.postimg.cc/VsqMczkD/Chat-GPT-Image-8-ago-2025-06-01-06-p-m.png'},
+      {id:'b3',cat:'burritos',name:'Burrito mixto',desc:'Pollo y res, con papas incluidas.',price:400,img:'https://i.postimg.cc/sfmPb5mT/Burrito-delicioso-en-plato-blanco.png'},
+      {id:'b4',cat:'burritos',name:'Burrito de pollo o res súper picad',desc:'Versión súper, bien cargado.',price:450,img:'https://i.postimg.cc/dVk87pYf/Burrito-sabroso-en-plato-blanco.png'},
+
+      // Hot Dog
+      {id:'h1',cat:'hotdog',name:'Hot Dog de res + papas',desc:'Clásico de res con papas.',price:175,img:'https://i.postimg.cc/3JbXx7Pp/Hot-dog-y-papas-fritas.png'},
+      {id:'h2',cat:'hotdog',name:'Hot Dog de pollo + papas',desc:'Salchicha de pollo + papas.',price:225,img:'https://i.postimg.cc/g038shrq/Perro-caliente-con-papas-fritas.png'},
+      {id:'h3',cat:'hotdog',name:'Hot Dog sin papas',desc:'Solo el hot dog, sin acompañante.',price:100,img:'https://i.postimg.cc/cLpffh1L/Perro-caliente-con-aderezos-y-cebolla.png'},
+      {id:'h4',cat:'hotdog',name:'Hot Dog súper "red" (res, maíz, queso)',desc:'Gourmet con maíz y queso.',price:400,img:'https://i.postimg.cc/8kZWZNk3/Perro-caliente-gourmet-con-aderezos.png'},
+
+      // Hamburguesas
+      {id:'g1',cat:'hamburguesas',name:'Hamburguesa de res, bacon, vegetales, papas y crema de hongos',desc:'Con papas y salsa de hongos.',price:550,img:'https://i.postimg.cc/G2rY5py0/Hamburguesa-con-papas-y-salsa.png'},
+      {id:'g2',cat:'hamburguesas',name:'Hamburguesa “súper” (res, bacon, papas, mozzarella frita)',desc:'Con mozzarella frita y papas.',price:400,img:'https://i.postimg.cc/J0zXRdxP/Hamburguesa-con-bacon-y-papas.png'},
+      {id:'g3',cat:'hamburguesas',name:'Bacon cheese (normal)',desc:'Clásica con bacon y queso.',price:250,img:'https://i.postimg.cc/L5Q15B0R/Hamburguesa-con-tocino-y-queso.png'},
+      {id:'g4',cat:'hamburguesas',name:'Bacon cheese con vegetales y papas',desc:'Con vegetales y papas.',price:300,img:'https://i.postimg.cc/wT3NPZ7B/Hamburguesa-con-bacon-y-papas-fritas.png'},
+      {id:'g5',cat:'hamburguesas',name:'Hamburguesa de pollo con mozzarella y papas',desc:'Pollo + mozzarella + papas.',price:350,img:'https://i.postimg.cc/dVyyQCRP/Hamburguesa-con-pollo-y-bacon.png'},
+      {id:'g6',cat:'hamburguesas',name:'Hamburguesa de pollo con bacon, cheese, papas + ketchup',desc:'Pollo, bacon, queso y papas.',price:400,img:'https://i.postimg.cc/zXMh17gF/Hamburguesa-de-pollo-con-papas-fritas.png'},
+      {id:'g7',cat:'hamburguesas',name:'Hamburguesa mar y tierra (res + pollo) con papas y vegetales',desc:'Doble proteína con papas.',price:500,img:'https://i.postimg.cc/g0b6x04w/Hamburguesa-Surf-and-Turf-con-acompa-amiento.png'},
+
+      // Bebidas
+      {id:'d1',cat:'bebidas',name:'CocaCola',desc:'Botella fría.',price:35,img:'https://static.vecteezy.com/system/resources/previews/037/751/381/non_2x/coca-cola-plastic-bottle-isolated-on-transparent-background-free-png.png'},
+      {id:'d2',cat:'bebidas',name:'Botella de Agua Dasani',desc:'600 ml.',price:25,img:'https://www.coca-cola.com/content/dam/onexp/pa/es/brands/dasani/dasani-600.jpg'},
+      {id:'d3',cat:'bebidas',name:'Jugo de Naranja',desc:'Natural.',price:75,img:'https://png.pngtree.com/png-clipart/20210801/original/pngtree-orange-juice-healthy-orange-juicy-png-image_6577326.jpg'},
+    ];
+
+    // ================== RENDER ==================
+    const menuEl = document.getElementById('menu');
+
+    function money(v){return CURRENCY + Number(v).toFixed(2)}
+
+    function itemCard(item){
+      const el = document.createElement('article');
+      el.className='item';
+      el.innerHTML = `
+        <div class="thumb"><img loading="lazy" src="${item.img}" alt="${item.name}"></div>
+        <div class="name">${item.name.toUpperCase()}</div>
+        <div class="desc">${item.desc||''}</div>
+        <div class="price-qty">
+          <div class="price">${money(item.price)}</div>
+          <div class="qty"><input type="number" inputmode="numeric" min="0" max="50" value="0" data-id="${item.id}" aria-label="Cantidad de ${item.name}"></div>
+        </div>`;
+      return el;
+    }
+
+    function render(searched){
+      menuEl.innerHTML='';
+      SECTIONS.forEach(sec=>{
+        const group = ITEMS.filter(i=>i.cat===sec.id && (!searched || (i.name+" "+(i.desc||'')).toLowerCase().includes(searched)) );
+        if(!group.length) return;
+        const secEl = document.createElement('section');
+        secEl.className='section';
+        secEl.innerHTML = `<h3>${sec.title}</h3>`;
+        group.forEach(it=>secEl.appendChild(itemCard(it)));
+        menuEl.appendChild(secEl);
+      })
+      updateFabTint();
+    }
+
+    // ====== FAB: lee todas las cantidades y añade al carrito ======
+    const fab = document.getElementById('addAll');
+    fab.onclick = ()=>{
+      const inputs = document.querySelectorAll('input[data-id]');
+      let added = 0;
+      inputs.forEach(inp=>{
+        const qty = Math.max(0, parseInt(inp.value||'0',10));
+        if(qty>0){
+          const item = ITEMS.find(i=>i.id===inp.dataset.id);
+          addToCart(item, qty);
+          added += qty;
+          inp.value = '0';
+        }
+      });
+      updateFabTint();
+      if(added>0){ cartModal.showModal(); }
+    };
+
+    function updateFabTint(){
+      // aclara el amarillo según la cantidad total seleccionada en los inputs
+      let selected = 0;
+      document.querySelectorAll('input[data-id]').forEach(i=> selected += Math.max(0, parseInt(i.value||'0',10)) );
+      const lightness = Math.min(70, 58 + selected*1.2); // 58%..70%
+      fab.style.background = `hsl(48, 90%, ${lightness}%)`;
+      fab.disabled = selected===0;
+    }
+
+    // Delegar para actualizar el tinte cuando cambian inputs
+    menuEl.addEventListener('input', (e)=>{
+      if(e.target && e.target.matches('input[data-id]')) updateFabTint();
+    });
+
+    // ================== CART ==================
+    const cart = new Map(); // id -> {item, qty}
+    const cartBtn = document.getElementById('cartBtn');
+    const cartCount = document.getElementById('cartCount');
+    const cartModal = document.getElementById('cartModal');
+    const cartItems = document.getElementById('cartItems');
+
+    function addToCart(item, qty){
+      const line = cart.get(item.id) || {item, qty:0};
+      line.qty += qty;
+      cart.set(item.id, line);
+      updateCartUI();
+    }
+
+    function cartTotals(){
+      let count = 0, total = 0;
+      for(const {item, qty} of cart.values()){ count += qty; total += item.price * qty; }
+      return {count, total};
+    }
+
+    function updateCartUI(){
+      const {count,total} = cartTotals();
+      cartCount.textContent = count;
+      cartCount.classList.toggle('hidden', count===0);
+      renderCartModalItems();
+      document.getElementById('cartTotal').textContent = 'Total: ' + money(total); // cuando es 0, muestra 0.00
+    }
+
+    function renderCartModalItems(){
+      if(!cart.size){ cartItems.innerHTML = '<div style="padding:20px;color:var(--muted)">Tu carrito está vacío.</div>'; return; }
+      const frag = document.createDocumentFragment();
+      for(const [id,{item,qty}] of cart){
+        const row = document.createElement('div');
+        row.className = 'cart-row';
+        row.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <div class="line"><div class="label">${item.name}</div><div class="meta">${qty} × ${money(item.price)}</div></div>
+          <div class="controls">
+            <button data-act="-">−</button>
+            <span>${qty}</span>
+            <button data-act="+">+</button>
+            <button data-act="x">Eliminar</button>
+          </div>`;
+        row.querySelector('[data-act="+"]').onclick = ()=>{cart.get(id).qty++;updateCartUI()};
+        row.querySelector('[data-act="-"]').onclick = ()=>{cart.get(id).qty=Math.max(1,cart.get(id).qty-1);updateCartUI()};
+        row.querySelector('[data-act="x"]').onclick = ()=>{cart.delete(id);updateCartUI()};
+        frag.appendChild(row);
+      }
+      cartItems.innerHTML='';
+      cartItems.appendChild(frag);
+    }
+
+    // ================== WHATSAPP ==================
+    function emojiFor(name){
+      const n = name.toLowerCase();
+      if(n.includes('burrito')) return '🌯';
+      if(n.includes('hot dog')||n.includes('perro')) return '🌭';
+      if(n.includes('hamburguesa')||n.includes('burger')) return '🍔';
+      if(n.includes('pechuga')||n.includes('pollo')) return '🍗';
+      if(n.includes('papas')) return '🍟';
+      if(n.includes('coca')||n.includes('refresco')||n.includes('soda')) return '🥤';
+      if(n.includes('agua')) return '💧';
+      if(n.includes('jugo')) return '🧃';
+      return '🍽️';
+    }
+
+    function buildWAMessage(){
+      if(!cart.size) return '';
+      const lines = [];
+      lines.push('*🍔 RED BURGERS — Nuevo pedido*');
+      for(const {item,qty} of cart.values()){
+        lines.push(`${emojiFor(item.name)} *${item.name}* × ${qty} — ${money(item.price*qty)}`);
+      }
+      const { total } = cartTotals();
+      lines.push('\n*Total:* ' + money(total));
+      const nombre = document.getElementById('cliNombre').value || '';
+      const direccion = document.getElementById('cliDireccion').value || '';
+      const nota = document.getElementById('cliNota').value || '';
+      lines.push('\n*Nombre:* ' + nombre);
+      lines.push('*Dirección:* ' + direccion);
+      lines.push('*Nota:* ' + nota);
+      return lines.join('\n');
+    }
+
+    function openWA(){
+      const text = buildWAMessage();
+      if(!text) return;
+      const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(text)}`;
+      window.open(url,'_blank');
+    }
+
+    document.getElementById('sendWAModal').onclick = openWA;
+
+    // ================== Eventos UI ==================
+    document.getElementById('searchBtn').onclick = ()=>{
+      document.getElementById('searchBox').classList.toggle('hidden');
+      document.getElementById('search')?.focus();
+    };
+    document.getElementById('search')?.addEventListener('input', (e)=>{
+      const q = (e.target.value||'').toLowerCase();
+      render(q);
+    });
+
+    document.getElementById('cartBtn').onclick = ()=> cartModal.showModal();
+    document.getElementById('closeCart').onclick = ()=> cartModal.close();
+
+    // ================== Tests (consola) ==================
+    (function runTests(){
+      try{
+        // Test 1: carrito vacío => buildWAMessage debe ser '' y total 0.00
+        console.assert(buildWAMessage()==='', 'Test1: buildWAMessage vacío debe devolver cadena vacía');
+        console.assert(document.getElementById('cartTotal').textContent.includes('$0.00'), 'Test1: Total inicial debe ser $0.00');
+
+        // Test 2: agregar 2 unidades de un producto
+        const backup = new Map(cart);
+        addToCart(ITEMS[0], 2);
+        const msg = buildWAMessage();
+        console.assert(msg.includes('Nuevo pedido'), 'Test2: encabezado presente');
+        console.assert(msg.includes('× 2'), 'Test2: cantidad ×2 presente');
+        console.assert(msg.includes(money(ITEMS[0].price*2)), 'Test2: subtotal de ítem correcto');
+        // restaurar estado
+        cart.clear(); backup.forEach((v,k)=>cart.set(k,v));
+        updateCartUI();
+        console.log('%cTests OK','color:#0f0');
+      }catch(e){ console.error('Tests fallaron:', e); }
+    })();
+
+    // Init
+    render();
+    updateFabTint();
+    updateCartUI();
+  </script>
+</body>
+</html>
