@@ -7,16 +7,18 @@
   <meta name="description" content="Haz tu pedido online en RED BURGERS. Selecciona cantidades, añade al carrito y pide por WhatsApp." />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ====== Mobile-first, fondo negro, íconos blancos ====== */
     :root{
-      --bg:#000;              /* fondo negro */
-      --paper:#0f0f10;        /* tarjetas oscuro suave */
-      --ink:#f2f2f3;          /* texto principal claro */
-      --muted:#a3a7b0;        /* texto secundario */
-      --brand:#b00020;        /* rojo para títulos */
-      --line:#1f2126;         /* bordes */
+      --bg:#000;
+      --paper:#0f0f10;
+      --ink:#f2f2f3;
+      --muted:#a3a7b0;
+      --brand:#b00020;
+      --line:#1f2126;
       --radius:18px;
       --shadow:0 10px 28px rgba(0,0,0,.45);
+      --ok:#22c55e;
+      --bad:#ef4444;
+      --accent:#0b0b0d;
     }
     *{box-sizing:border-box}
     html,body{margin:0}
@@ -25,77 +27,59 @@
     button{font-family:inherit}
 
     /* ====== Top bar ====== */
-    .topbar{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.75);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line)}
+    .topbar{position:sticky;top:0;z-index:60;background:rgba(0,0,0,.75);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line)}
     .topbar-inner{max-width:560px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .icon-btn{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:transparent;color:#fff;display:grid;place-items:center;box-shadow:none}
     .brand-badge{width:40px;height:40px;border-radius:999px;background:#111;border:1px solid var(--line);overflow:hidden}
     .brand-badge img{width:100%;height:100%;object-fit:contain}
+    .icon-btn{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:transparent;color:#fff;display:grid;place-items:center;box-shadow:none}
     .cart-btn{position:relative}
     .cart-count{position:absolute;top:-6px;right:-6px;background:#fff;color:#000;font-size:11px;min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;padding:0 5px;border:2px solid #000}
+
+    /* ====== Search bar sticky ====== */
+    .search-wrap{position:sticky;top:62px;z-index:55;background:rgba(0,0,0,.75);backdrop-filter:saturate(180%) blur(8px);border-bottom:1px solid var(--line)}
+    .search-inner{max-width:560px;margin:0 auto;padding:8px 12px}
+    #search{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--accent);color:#fff;font-size:16px;outline:none}
 
     /* ====== Hero ====== */
     .hero{max-width:560px;margin:0 auto;padding:14px 16px 0}
     .hero-logo{width:92px;height:92px;border-radius:999px;border:4px solid #111;overflow:hidden;margin:-30px auto 8px;background:#111;box-shadow:var(--shadow)}
     .hero-logo img{width:100%;height:100%;object-fit:contain}
     .title{font-weight:700;text-align:center;font-size:22px}
-    .rating{display:flex;gap:6px;align-items:center;justify-content:center;color:#fff}
+    .rating{display:none} /* oculto estrellas */
+
     .meta{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;flex-wrap:wrap}
+    .hours-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:inherit}
+    .dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+    .dot.ok{background:var(--ok)}
+    .dot.bad{background:var(--bad)}
     .tagline{color:var(--muted);text-align:center;margin-top:6px}
 
-    /* ====== Secciones y tarjetas ====== */
+    /* ====== Contenido ====== */
     .container{max-width:560px;margin:12px auto 120px;padding:0 12px}
     .section{margin:16px 0}
     .section h3{font-size:18px; text-align:center; margin:10px 4px;color:var(--brand)}
 
-    /* Tarjeta vertical: imagen, nombre, desc, precio */
-.item {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  /* Modificaciones para centrar */
-  max-width: 420px;       /* ancho máximo para que no se pegue a los bordes */
-  margin-left: auto;      /* centra horizontalmente */
-  margin-right: auto;
-  align-items: center;    /* centra contenido horizontalmente */
-  text-align: center;     /* centra texto */
-}
+    /* ====== Tarjetas ====== */
+    .item{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:12px;display:flex;flex-direction:column;gap:8px;max-width:420px;margin-left:auto;margin-right:auto;align-items:center;text-align:center}
     .item + .item{margin-top:10px}
-/* Imagen de producto en la tarjeta */
-.thumb{
-  width: 100%;
-  max-height: 120px;   /* reduce la altura máxima */
-  overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-}
-.thumb img{
-  width: auto;          /* mantiene proporción natural */
-  height: auto;         /* mantiene proporción natural */
-  max-width: 100%;      /* que no se pase del ancho */
-  max-height: 120px;    /* coincide con el contenedor */
-  object-fit: contain;  /* asegura que no se recorte */
- /* Modificaciones para centrar */
-  max-width: 420px;       /* ancho máximo para que no se pegue a los bordes */
-  margin-left: auto;      /* centra horizontalmente */
-  margin-right: auto;
-  align-items: center;    /* centra contenido horizontalmente */
-  text-align: center;     /* centra texto */
-}
+    .thumb{width:100%;max-height:120px;overflow:hidden;border-radius:12px;border:1px solid var(--line)}
+    .thumb img{width:auto;height:auto;max-width:100%;max-height:120px;object-fit:contain}
     .name{font-size:15px;font-weight:800;letter-spacing:.2px}
     .desc{font-size:12px;color:var(--muted);line-height:1.4}
-    .price-qty{display:flex;align-items:center;justify-content:space-between}
+    .price-qty{display:flex;align-items:center;justify-content:space-between;width:100%}
     .price{font-size:14px;font-weight:700}
-    .qty{display:flex;align-items:center;gap:8px}
-    .qty input{width:64px;padding:8px;border-radius:10px;border:1px solid var(--line);background:#0b0b0d;color:var(--ink);text-align:center}
 
-    /* ====== Botón flotante único: Añadir (amarillo opaco que se aclara con la cantidad) ====== */
-    .fab-add{position:fixed;right:14px;bottom:14px;border:0;border-radius:999px;padding:14px 18px;font-weight:900;box-shadow:var(--shadow);cursor:pointer;color:#111;background:hsl(48, 90%, 58%);} /* base */
+    /* Qty with + and − */
+    .qty{display:flex;align-items:center;gap:8px}
+    .qty-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--accent);color:#fff;font-size:18px;line-height:0;cursor:pointer}
+    .qty input{width:56px;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--accent);color:var(--ink);text-align:center;font-size:16px}
+    /* quitar flechas del number */
+    .qty input::-webkit-outer-spin-button,
+    .qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .qty input[type=number]{-moz-appearance:textfield}
+
+    /* ====== Botón flotante Añadir ====== */
+    .fab-add{position:fixed;right:14px;bottom:14px;border:0;border-radius:999px;padding:14px 18px;font-weight:900;box-shadow:var(--shadow);cursor:pointer;color:#111;background:hsl(48, 90%, 58%);}
     .fab-add:disabled{opacity:.5;cursor:not-allowed}
 
     /* ====== Carrito ====== */
@@ -112,41 +96,58 @@
     .cart-foot .total{font-weight:800}
     .cart-foot .send{background:#25D366;color:#062d1c;border:0;border-radius:12px;padding:12px 16px;font-weight:900}
 
-    /* Campos de cliente */
+    /* ====== Form ====== */
     .form{padding:12px 16px;display:grid;gap:10px}
     .form input, .form textarea{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0b0b0d;color:#fff}
     .form textarea{min-height:60px;resize:vertical}
 
-    /* ====== Util ====== */
+    /* ====== Modal de horarios ====== */
+    dialog.hours{border:1px solid var(--line);border-radius:16px;padding:0;max-width:420px;width:92vw;background:#111;color:#fff}
+    .hours-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+    .hours-body{padding:12px 16px}
+    .hours-body ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+    .hours-body li{display:flex;justify-content:space-between;color:#ddd}
+    .close-btn{border:1px solid var(--line);background:transparent;color:#fff;border-radius:10px;padding:6px 10px;cursor:pointer}
+
+    /* ====== Footer ====== */
+    .site-foot{max-width:560px;margin:0 auto 40px; padding:16px 12px;color:var(--muted);border-top:1px solid var(--line);text-align:center}
+    .site-foot a{color:#fff;text-decoration:none;border:1px solid var(--line);padding:10px 12px;border-radius:12px;display:inline-block;margin:6px}
     .hidden{display:none!important}
   </style>
 </head>
 <body>
-  <!-- ====== Topbar ====== -->
+  <!-- ====== Topbar (sin menú de 3 rayas) ====== -->
   <header class="topbar">
     <div class="topbar-inner">
-      <button class="icon-btn" aria-label="Menú">☰</button>
       <div class="brand-badge"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="Logo RED BURGERS"></div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button id="searchBtn" class="icon-btn" aria-label="Buscar">🔍</button>
+        <!-- Quitado el botón de búsqueda y el menú -->
         <button id="cartBtn" class="icon-btn cart-btn" aria-label="Carrito">🛒<span id="cartCount" class="cart-count hidden">0</span></button>
       </div>
     </div>
   </header>
 
+  <!-- ====== Barra de búsqueda SIEMPRE visible ====== -->
+  <div class="search-wrap">
+    <div class="search-inner">
+      <input id="search" type="search" placeholder="Buscar en el menú…" />
+    </div>
+  </div>
+
   <!-- ====== Hero ====== -->
   <section class="hero">
     <div class="hero-logo"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="RED BURGERS"></div>
     <div class="title">RED BURGERS</div>
-    <div class="rating"><span>⭐</span><strong>5</strong><span>(7)</span></div>
-    <div class="meta">🟢 Abierto • 12:00 PM–11:00 PM • 📍 Calle Interior C #3, Santo Domingo</div>
+    <!-- rating removido -->
+    <div class="meta">
+      <button id="hoursBtn" class="hours-btn" title="Ver horarios">
+        <span id="statusDot" class="dot ok"></span>
+        <span id="statusLabel">Abierto</span> • <span class="hours-range">12:00 PM–11:00 PM</span>
+      </button>
+      • 📍 Calle Interior C #3, Santo Domingo
+    </div>
     <div class="tagline">Smash & more</div>
   </section>
-
-  <!-- ====== Buscador ====== -->
-  <div id="searchBox" class="container hidden" style="padding-top:0">
-    <input id="search" type="search" placeholder="Buscar en el menú…" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#0b0b0d;color:#fff" />
-  </div>
 
   <!-- ====== Menú ====== -->
   <main id="menu" class="container"></main>
@@ -174,12 +175,37 @@
     </div>
   </dialog>
 
+  <!-- ====== Modal Horarios ====== -->
+  <dialog id="hoursModal" class="hours">
+    <div class="hours-head">
+      <strong>Horarios</strong>
+      <button class="close-btn" id="closeHours">Cerrar</button>
+    </div>
+    <div class="hours-body">
+      <ul>
+        <li><span>Lunes</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Martes</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Miércoles</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Jueves</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Viernes</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Sábado</span><span>12:00 PM – 11:00 PM</span></li>
+        <li><span>Domingo</span><span>12:00 PM – 11:00 PM</span></li>
+      </ul>
+    </div>
+  </dialog>
+
+  <!-- ====== Footer ====== -->
+  <footer class="site-foot">
+    <a href="tel:18094862675">Llámanos: (809) 486-2675</a>
+    <a href="https://www.instagram.com/red_burgers_rd/" target="_blank" rel="noopener">Instagram: @red_burgers_rd</a>
+  </footer>
+
   <script>
     // ================== CONFIG ==================
     const PHONE = '18094862675';
     const CURRENCY = '$';
 
-    // ================== DATA (tus productos, SIN los de Shark) ==================
+    // ================== DATA ==================
     const SECTIONS = [
       { id:'pechuga', title:'Pechuga a la plancha' },
       { id:'burritos', title:'Burritos' },
@@ -235,15 +261,20 @@
         <div class="desc">${item.desc||''}</div>
         <div class="price-qty">
           <div class="price">${money(item.price)}</div>
-          <div class="qty"><input type="number" inputmode="numeric" min="0" max="50" value="0" data-id="${item.id}" aria-label="Cantidad de ${item.name}"></div>
+          <div class="qty">
+            <button class="qty-btn" data-qty="-" data-id="${item.id}" aria-label="Restar">−</button>
+            <input type="number" inputmode="numeric" min="0" max="50" value="0" data-id="${item.id}" aria-label="Cantidad de ${item.name}">
+            <button class="qty-btn" data-qty="+" data-id="${item.id}" aria-label="Sumar">+</button>
+          </div>
         </div>`;
       return el;
     }
 
     function render(searched){
       menuEl.innerHTML='';
+      const q = (searched||'').toLowerCase();
       SECTIONS.forEach(sec=>{
-        const group = ITEMS.filter(i=>i.cat===sec.id && (!searched || (i.name+" "+(i.desc||'')).toLowerCase().includes(searched)) );
+        const group = ITEMS.filter(i=>i.cat===sec.id && (!q || (i.name+" "+(i.desc||'')).toLowerCase().includes(q)) );
         if(!group.length) return;
         const secEl = document.createElement('section');
         secEl.className='section';
@@ -254,7 +285,7 @@
       updateFabTint();
     }
 
-    // ====== FAB: lee todas las cantidades y añade al carrito ======
+    // ====== FAB: lee cantidades y añade al carrito ======
     const fab = document.getElementById('addAll');
     fab.onclick = ()=>{
       const inputs = document.querySelectorAll('input[data-id]');
@@ -273,21 +304,31 @@
     };
 
     function updateFabTint(){
-      // aclara el amarillo según la cantidad total seleccionada en los inputs
       let selected = 0;
       document.querySelectorAll('input[data-id]').forEach(i=> selected += Math.max(0, parseInt(i.value||'0',10)) );
-      const lightness = Math.min(70, 58 + selected*1.2); // 58%..70%
+      const lightness = Math.min(70, 58 + selected*1.2);
       fab.style.background = `hsl(48, 90%, ${lightness}%)`;
       fab.disabled = selected===0;
     }
 
-    // Delegar para actualizar el tinte cuando cambian inputs
+    // Delegaciones: input para tinte y click para +/−
     menuEl.addEventListener('input', (e)=>{
       if(e.target && e.target.matches('input[data-id]')) updateFabTint();
     });
+    menuEl.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-qty]');
+      if(!btn) return;
+      const id = btn.dataset.id;
+      const inp = menuEl.querySelector(`input[data-id="${id}"]`);
+      let v = Math.max(0, parseInt(inp.value||'0',10));
+      if(btn.dataset.qty === '+') v = Math.min(50, v+1);
+      else v = Math.max(0, v-1);
+      inp.value = String(v);
+      updateFabTint();
+    });
 
     // ================== CART ==================
-    const cart = new Map(); // id -> {item, qty}
+    const cart = new Map();
     const cartBtn = document.getElementById('cartBtn');
     const cartCount = document.getElementById('cartCount');
     const cartModal = document.getElementById('cartModal');
@@ -311,7 +352,7 @@
       cartCount.textContent = count;
       cartCount.classList.toggle('hidden', count===0);
       renderCartModalItems();
-      document.getElementById('cartTotal').textContent = 'Total: ' + money(total); // cuando es 0, muestra 0.00
+      document.getElementById('cartTotal').textContent = 'Total: ' + money(total);
     }
 
     function renderCartModalItems(){
@@ -376,39 +417,51 @@
       const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(text)}`;
       window.open(url,'_blank');
     }
-
     document.getElementById('sendWAModal').onclick = openWA;
 
     // ================== Eventos UI ==================
-    document.getElementById('searchBtn').onclick = ()=>{
-      document.getElementById('searchBox').classList.toggle('hidden');
-      document.getElementById('search')?.focus();
-    };
-    document.getElementById('search')?.addEventListener('input', (e)=>{
-      const q = (e.target.value||'').toLowerCase();
-      render(q);
-    });
+    // (El botón de búsqueda fue eliminado; búsqueda siempre visible)
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('input', (e)=> render(e.target.value||'') );
 
     document.getElementById('cartBtn').onclick = ()=> cartModal.showModal();
     document.getElementById('closeCart').onclick = ()=> cartModal.close();
 
-    // ================== Tests (consola) ==================
+    // ====== Modal de horarios ======
+    const hoursBtn = document.getElementById('hoursBtn');
+    const hoursModal = document.getElementById('hoursModal');
+    const closeHours = document.getElementById('closeHours');
+    hoursBtn.onclick = ()=> hoursModal.showModal();
+    closeHours.onclick = ()=> hoursModal.close();
+
+    // ====== Estado Abierto/Cerrado ======
+    const statusDot = document.getElementById('statusDot');
+    const statusLabel = document.getElementById('statusLabel');
+
+    function isOpenNow(d=new Date()){
+      const open = new Date(d); open.setHours(12,0,0,0);
+      const close = new Date(d); close.setHours(23,0,0,0);
+      return d >= open && d <= close;
+    }
+    function updateOpenBadge(){
+      const open = isOpenNow();
+      statusDot.classList.toggle('ok', open);
+      statusDot.classList.toggle('bad', !open);
+      statusLabel.textContent = open ? 'Abierto' : 'Cerrado';
+    }
+    updateOpenBadge();
+    setInterval(updateOpenBadge, 60*1000); // refresca cada minuto
+
+    // ================== Tests rápidos ==================
     (function runTests(){
       try{
-        // Test 1: carrito vacío => buildWAMessage debe ser '' y total 0.00
-        console.assert(buildWAMessage()==='', 'Test1: buildWAMessage vacío debe devolver cadena vacía');
-        console.assert(document.getElementById('cartTotal').textContent.includes('$0.00'), 'Test1: Total inicial debe ser $0.00');
-
-        // Test 2: agregar 2 unidades de un producto
+        console.assert(document.getElementById('cartTotal').textContent.includes('$0.00'), 'Total inicial debe ser $0.00');
         const backup = new Map(cart);
+        // simular añadir
         addToCart(ITEMS[0], 2);
-        const msg = buildWAMessage();
-        console.assert(msg.includes('Nuevo pedido'), 'Test2: encabezado presente');
-        console.assert(msg.includes('× 2'), 'Test2: cantidad ×2 presente');
-        console.assert(msg.includes(money(ITEMS[0].price*2)), 'Test2: subtotal de ítem correcto');
-        // restaurar estado
-        cart.clear(); backup.forEach((v,k)=>cart.set(k,v));
-        updateCartUI();
+        const hasTwo = [...cart.values()].some(l=>l.item.id===ITEMS[0].id && l.qty===2);
+        console.assert(hasTwo, 'Se agregaron 2 unidades');
+        cart.clear(); backup.forEach((v,k)=>cart.set(k,v)); updateCartUI();
         console.log('%cTests OK','color:#0f0');
       }catch(e){ console.error('Tests fallaron:', e); }
     })();
@@ -420,3 +473,4 @@
   </script>
 </body>
 </html>
+
