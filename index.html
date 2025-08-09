@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shark Burgers — Pedido Online</title>
+  <meta name="description" content="Haz tu pedido online en Shark Burgers. Añade productos al carrito y envía el pedido por WhatsApp." />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ====== Diseño mobile-first estilo TakeApp ====== */
+    :root{
+      --bg:#f5f3e8;            /* beige claro */
+      --paper:#ffffff;         /* tarjetas */
+      --ink:#1d1d1f;           /* texto principal */
+      --muted:#6b7280;         /* texto secundario */
+      --brand:#b00020;         /* rojo marca */
+      --line:#e5e7eb;          /* bordes suaves */
+      --chip:#f3f4f6;          /* chips */
+      --radius:18px;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0}
+    body{font-family:'Poppins',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+    img{display:block;max-width:100%}
+    button{font-family:inherit}
+
+    /* ====== Top bar ====== */
+    .topbar{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:520px;margin:0 auto;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .icon-btn{width:36px;height:36px;border-radius:999px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;box-shadow:var(--shadow)}
+    .brand-badge{width:40px;height:40px;border-radius:999px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+    .brand-badge img{width:100%;height:100%;object-fit:contain}
+    .cart-btn{position:relative}
+    .cart-count{position:absolute;top:-6px;right:-6px;background:var(--brand);color:#fff;font-size:11px;min-width:18px;height:18px;border-radius:999px;display:grid;place-items:center;padding:0 5px;border:2px solid #fff}
+
+    /* ====== Hero ====== */
+    .hero{max-width:520px;margin:0 auto;padding:14px 16px 0}
+    .hero-logo{width:92px;height:92px;border-radius:999px;border:4px solid #fff;overflow:hidden;margin:-30px auto 8px;background:#fff;box-shadow:var(--shadow)}
+    .hero-logo img{width:100%;height:100%;object-fit:contain}
+    .title{font-weight:700;text-align:center;font-size:22px}
+    .rating{display:flex;gap:6px;align-items:center;justify-content:center;color:#111}
+    .meta{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;flex-wrap:wrap}
+    .tagline{color:var(--muted);text-align:center;margin-top:6px}
+
+    /* ====== Secciones y tarjetas estilo lista ====== */
+    .container{max-width:520px;margin:12px auto 100px;padding:0 12px}
+    .section{margin:12px 0}
+    .section h3{font-size:18px;margin:10px 4px;color:#111}
+
+    .item{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 12px 16px;display:grid;grid-template-columns:1fr 90px;gap:10px;box-shadow:var(--shadow)}
+    .item + .item{margin-top:10px}
+    .item .name{font-size:14px;font-weight:800;letter-spacing:.2px}
+    .item .desc{font-size:12px;color:var(--muted);line-height:1.35;max-height:32px;overflow:hidden}
+    .item .price{font-size:14px;font-weight:700;margin-top:6px}
+    .thumb{width:90px;height:90px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+
+    .add-fab{position:absolute;right:12px;bottom:12px;background:var(--brand);color:#fff;border:0;border-radius:999px;padding:8px 14px;font-weight:700;box-shadow:var(--shadow);cursor:pointer}
+
+    /* ====== Barra para pedir por WhatsApp ====== */
+    .wa-bar{position:fixed;left:12px;right:12px;bottom:14px;background:#0b2; /* será reemplazado */
+      background:linear-gradient(180deg,#0dd27c,#03b064);
+      color:#062d1c;border-radius:14px;display:none;align-items:center;justify-content:space-between;padding:12px 14px;z-index:60;box-shadow:var(--shadow)}
+    .wa-bar.show{display:flex}
+    .wa-bar .summary{font-size:14px}
+    .wa-bar .cta{background:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:800}
+
+    /* ====== Modal del carrito ====== */
+    dialog.cart{border:1px solid var(--line);border-radius:16px;padding:0;max-width:520px;width:92vw}
+    .cart-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line);background:#fff}
+    .cart-items{max-height:60vh;overflow:auto;background:#fff}
+    .cart-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #f1f1f3}
+    .cart-row img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--line)}
+    .line .label{font-weight:700;font-size:14px}
+    .line .meta{font-size:12px;color:var(--muted)}
+    .controls{display:flex;align-items:center;gap:8px}
+    .controls button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 10px}
+    .cart-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-top:1px solid var(--line);background:#fff}
+    .cart-foot .total{font-weight:800}
+    .cart-foot .send{background:linear-gradient(180deg,#0dd27c,#03b064);color:#062d1c;border:0;border-radius:12px;padding:12px 16px;font-weight:900}
+
+    /* ====== Util ====== */
+    .hidden{display:none!important}
+  </style>
+</head>
+<body>
+  <!-- ====== Topbar ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <button class="icon-btn" aria-label="Menú">☰</button>
+      <div class="brand-badge"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="Logo Shark Burgers"></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="searchBtn" class="icon-btn" aria-label="Buscar">🔍</button>
+        <button id="cartBtn" class="icon-btn cart-btn" aria-label="Carrito">🛒<span id="cartCount" class="cart-count hidden">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====== Hero (encabezado) ====== -->
+  <section class="hero">
+    <div class="hero-logo"><img src="https://i.postimg.cc/x1KV6bd0/logo-Red-burguers.png" alt="Shark Burgers"></div>
+    <div class="title">Shark Burgers</div>
+    <div class="rating"><span>⭐</span><strong>5</strong><span>(7)</span></div>
+    <div class="meta">🟢 Abierto • 12:00 PM–11:00 PM • 📍 Calle Interior C #3, Santo Domingo</div>
+    <div class="tagline">The OG smash</div>
+  </section>
+
+  <!-- ====== Buscador (plegable) ====== -->
+  <div id="searchBox" class="container hidden" style="padding-top:0">
+    <input id="search" type="search" placeholder="Buscar en el menú…" style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff" />
+  </div>
+
+  <!-- ====== Menú ====== -->
+  <main id="menu" class="container"></main>
+
+  <!-- ====== Barra WhatsApp ====== -->
+  <div id="waBar" class="wa-bar">
+    <div class="summary"><span id="sumCount">0</span> artículos • <strong id="sumTotal">$0.00</strong></div>
+    <button id="sendWA" class="cta">Pedir por WhatsApp</button>
+  </div>
+
+  <!-- ====== Carrito ====== -->
+  <dialog id="cartModal" class="cart">
+    <div class="cart-head">
+      <strong>Tu carrito</strong>
+      <button id="closeCart" class="icon-btn" style="border:1px solid var(--line);background:#fff">✕</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total" id="cartTotal">Total: $0.00</div>
+      <button id="sendWAModal" class="send">Pedir por WhatsApp</button>
+    </div>
+  </dialog>
+
+  <script>
+    // ================== CONFIG ==================
+    const PHONE = '18094862675';
+    const CURRENCY = '$';
+
+    // Mapear emojis por tipo de producto
+    function emojiFor(name){
+      const n = name.toLowerCase();
+      if(n.includes('burrito')) return '🌯';
+      if(n.includes('hot dog')||n.includes('perro')) return '🌭';
+      if(n.includes('hamburguesa')||n.includes('burger')) return '🍔';
+      if(n.includes('pechuga')||n.includes('pollo')) return '🍗';
+      if(n.includes('papas')) return '🍟';
+      if(n.includes('coca')||n.includes('refresco')||n.includes('soda')) return '🥤';
+      if(n.includes('agua')) return '💧';
+      if(n.includes('jugo')) return '🧃';
+      return '🍽️';
+    }
+
+    // ================== DATA (desde tu HTML) ==================
+    const SECTIONS = [
+      { id:'pechuga', title:'Appetizer / Pechuga a la plancha' },
+      { id:'fries', title:'Fries' }, // derivado de tus papas
+      { id:'burritos', title:'Burritos (Papas incluidas)' },
+      { id:'hotdog', title:'Hot Dog' },
+      { id:'hamburguesas', title:'Burgers' },
+      { id:'bebidas', title:'Bebidas' },
+    ];
+
+    const ITEMS = [
+      // Pechuga
+      {id:'p1',cat:'pechuga',name:'Pechuga a la plancha con papas + ensalada',desc:'Pechuga sellada a la plancha con guarnición.',price:400,img:'https://i.postimg.cc/VvWb9WV3/Chat-GPT-Image-8-ago-2025-06-01-19-p-m.png'},
+      {id:'p2',cat:'pechuga',name:'Pechuga a la crema + papas + ensalada',desc:'Salsa cremosa, papas fritas y ensalada.',price:500,img:'https://i.postimg.cc/WbKsWkcK/Plato-delicioso-con-pollo-y-ensalada.png'},
+      {id:'p3',cat:'pechuga',name:'Pechuga a la plancha con salsa bbq, vegetales salteados, fritos o papas fritas',desc:'A tu elección: vegetales, fritos o papas.',price:500,img:'https://i.postimg.cc/NfbH5bTX/Chat-GPT-Image-8-ago-2025-06-01-15-p-m.png'},
+
+      // Fries (desde tu lista de acompañamientos / ejemplos)
+      {id:'f1',cat:'fries',name:'Shark Fries Deluxe',desc:'Papas crujientes con Shark Sauce y toppings.',price:500,img:'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1200&auto=format&fit=crop'},
+      {id:'f2',cat:'fries',name:'Truffle Bacon Bliss',desc:'Papas con salsa de hongos y bacon.',price:450,img:'https://images.unsplash.com/photo-1541599188778-cdc73298e8f8?q=80&w=1200&auto=format&fit=crop'},
+
+      // Burritos
+      {id:'b1',cat:'burritos',name:'Burrito de pollo',desc:'Relleno de pollo, con papas incluidas.',price:350,img:'https://i.postimg.cc/YqtFrT4k/Chat-GPT-Image-8-ago-2025-06-01-02-p-m.png'},
+      {id:'b2',cat:'burritos',name:'Burrito de res',desc:'Relleno de res, con papas incluidas.',price:350,img:'https://i.postimg.cc/VsqMczkD/Chat-GPT-Image-8-ago-2025-06-01-06-p-m.png'},
+      {id:'b3',cat:'burritos',name:'Burrito mixto',desc:'Pollo y res, con papas incluidas.',price:400,img:'https://i.postimg.cc/sfmPb5mT/Burrito-delicioso-en-plato-blanco.png'},
+      {id:'b4',cat:'burritos',name:'Burrito de pollo o res súper picad',desc:'Versión súper, bien cargado.',price:450,img:'https://i.postimg.cc/dVk87pYf/Burrito-sabroso-en-plato-blanco.png'},
+
+      // Hot Dog
+      {id:'h1',cat:'hotdog',name:'Hot Dog de res + papas',desc:'Clásico de res con papas.',price:175,img:'https://i.postimg.cc/3JbXx7Pp/Hot-dog-y-papas-fritas.png'},
+      {id:'h2',cat:'hotdog',name:'Hot Dog de pollo + papas',desc:'Salchicha de pollo + papas.',price:225,img:'https://i.postimg.cc/g038shrq/Perro-caliente-con-papas-fritas.png'},
+      {id:'h3',cat:'hotdog',name:'Hot Dog sin papas',desc:'Solo el hot dog, sin acompañante.',price:100,img:'https://i.postimg.cc/cLpffh1L/Perro-caliente-con-aderezos-y-cebolla.png'},
+      {id:'h4',cat:'hotdog',name:'Hot Dog súper "red" (res, maíz, queso)',desc:'Gourmet con maíz y queso.',price:400,img:'https://i.postimg.cc/8kZWZNk3/Perro-caliente-gourmet-con-aderezos.png'},
+
+      // Hamburguesas
+      {id:'g1',cat:'hamburguesas',name:'Hamburguesa de res, bacon, vegetales, papas y crema de hongos',desc:'Con papas y salsa de hongos.',price:550,img:'https://i.postimg.cc/G2rY5py0/Hamburguesa-con-papas-y-salsa.png'},
+      {id:'g2',cat:'hamburguesas',name:'Hamburguesa “súper” (res, bacon, papas, mozzarella frita)',desc:'Con mozzarella frita y papas.',price:400,img:'https://i.postimg.cc/J0zXRdxP/Hamburguesa-con-bacon-y-papas.png'},
+      {id:'g3',cat:'hamburguesas',name:'Bacon cheese (normal)',desc:'Clásica con bacon y queso.',price:250,img:'https://i.postimg.cc/L5Q15B0R/Hamburguesa-con-tocino-y-queso.png'},
+      {id:'g4',cat:'hamburguesas',name:'Bacon cheese con vegetales y papas',desc:'Con vegetales y papas.',price:300,img:'https://i.postimg.cc/wT3NPZ7B/Hamburguesa-con-bacon-y-papas-fritas.png'},
+      {id:'g5',cat:'hamburguesas',name:'Hamburguesa de pollo con mozzarella y papas',desc:'Pollo + mozzarella + papas.',price:350,img:'https://i.postimg.cc/dVyyQCRP/Hamburguesa-con-pollo-y-bacon.png'},
+      {id:'g6',cat:'hamburguesas',name:'Hamburguesa de pollo con bacon, cheese, papas + ketchup',desc:'Pollo, bacon, queso y papas.',price:400,img:'https://i.postimg.cc/zXMh17gF/Hamburguesa-de-pollo-con-papas-fritas.png'},
+      {id:'g7',cat:'hamburguesas',name:'Hamburguesa mar y tierra (res + pollo) con papas y vegetales',desc:'Doble proteína con papas.',price:500,img:'https://i.postimg.cc/g0b6x04w/Hamburguesa-Surf-and-Turf-con-acompa-amiento.png'},
+
+      // Bebidas
+      {id:'d1',cat:'bebidas',name:'CocaCola',desc:'Botella fría.',price:35,img:'https://static.vecteezy.com/system/resources/previews/037/751/381/non_2x/coca-cola-plastic-bottle-isolated-on-transparent-background-free-png.png'},
+      {id:'d2',cat:'bebidas',name:'Botella de Agua Dasani',desc:'600 ml.',price:25,img:'https://www.coca-cola.com/content/dam/onexp/pa/es/brands/dasani/dasani-600.jpg'},
+      {id:'d3',cat:'bebidas',name:'Jugo de Naranja',desc:'Natural.',price:75,img:'https://png.pngtree.com/png-clipart/20210801/original/pngtree-orange-juice-healthy-orange-juicy-png-image_6577326.jpg'},
+    ];
+
+    // ================== RENDER ==================
+    const menuEl = document.getElementById('menu');
+    function money(v){return CURRENCY + Number(v).toFixed(2)}
+
+    function render(){
+      menuEl.innerHTML='';
+      SECTIONS.forEach(sec=>{
+        const group = ITEMS.filter(i=>i.cat===sec.id);
+        if(!group.length) return;
+        const secEl = document.createElement('section');
+        secEl.className='section';
+        secEl.innerHTML = `<h3>${sec.title}</h3>`;
+        group.forEach(it=>secEl.appendChild(itemCard(it)));
+        menuEl.appendChild(secEl);
+      })
+    }
+
+    function itemCard(item){
+      const el = document.createElement('article');
+      el.className='item';
+      el.innerHTML = `
+        <div>
+          <div class="name">${item.name.toUpperCase()}</div>
+          <div class="desc">${item.desc||''}</div>
+          <div class="price">${money(item.price)}</div>
+        </div>
+        <div class="thumb"><img loading="lazy" src="${item.img}" alt="${item.name}"></div>
+        <button class="add-fab">Añadir</button>
+      `;
+      el.querySelector('.add-fab').onclick = ()=> addToCart(item, 1);
+      return el;
+    }
+
+    // ================== CART ==================
+    const cart = new Map(); // id -> {item, qty}
+    const waBar = document.getElementById('waBar');
+    const sumCount = document.getElementById('sumCount');
+    const sumTotal = document.getElementById('sumTotal');
+    const cartBtn = document.getElementById('cartBtn');
+    const cartCount = document.getElementById('cartCount');
+    const cartModal = document.getElementById('cartModal');
+    const cartItems = document.getElementById('cartItems');
+
+    function addToCart(item, qty){
+      const line = cart.get(item.id) || {item, qty:0};
+      line.qty += qty;
+      cart.set(item.id, line);
+      updateCartUI();
+    }
+
+    function updateCartUI(){
+      // Totales
+      let count=0,total=0;
+      for(const {item,qty} of cart.values()){count+=qty; total += item.price*qty}
+      sumCount.textContent = count;
+      sumTotal.textContent = money(total);
+      cartCount.textContent = count;
+      cartCount.classList.toggle('hidden', count===0);
+      waBar.classList.toggle('show', count>0);
+      // Render modal
+      renderCartModal();
+    }
+
+    function renderCartModal(){
+      if(!cart.size){ cartItems.innerHTML = '<div style="padding:20px;color:var(--muted)">Tu carrito está vacío.</div>'; return; }
+      const frag = document.createDocumentFragment();
+      for(const [id,{item,qty}] of cart){
+        const row = document.createElement('div');
+        row.className = 'cart-row';
+        row.innerHTML = `
+          <img src="${item.img}" alt="${item.name}">
+          <div class="line"><div class="label">${item.name}</div><div class="meta">${qty} × ${money(item.price)}</div></div>
+          <div class="controls">
+            <button data-act="-">−</button>
+            <span>${qty}</span>
+            <button data-act="+">+</button>
+            <button data-act="x">Eliminar</button>
+          </div>`;
+        row.querySelector('[data-act="+"]').onclick = ()=>{cart.get(id).qty++;updateCartUI()};
+        row.querySelector('[data-act="-"]').onclick = ()=>{cart.get(id).qty=Math.max(1,cart.get(id).qty-1);updateCartUI()};
+        row.querySelector('[data-act="x"]').onclick = ()=>{cart.delete(id);updateCartUI()};
+        frag.appendChild(row);
+      }
+      cartItems.innerHTML='';
+      cartItems.appendChild(frag);
+      // Total en modal
+      document.getElementById('cartTotal').textContent = 'Total: ' + sumTotal.textContent;
+    }
+
+    // ================== WHATSAPP ==================
+    function buildWAMessage(){
+      if(!cart.size) return '';
+      const lines = [];
+      lines.push('*🦈 Shark Burgers — Nuevo pedido*');
+      for(const {item,qty} of cart.values()){
+        lines.push(`${emojiFor(item.name)} *${item.name}* × ${qty} — ${money(item.price*qty)}`);
+      }
+      const total = sumTotal.textContent;
+      lines.push('\n*Total:* ' + total);
+      lines.push('\n*Nombre:*');
+      lines.push('*Entrega:* Retiro / Delivery');
+      lines.push('*Notas:*');
+      return lines.join('\n');
+    }
+
+    function openWA(){
+      const text = buildWAMessage();
+      if(!text) return;
+      const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(text)}`;
+      window.open(url,'_blank');
+    }
+
+    document.getElementById('sendWA').onclick = openWA;
+    document.getElementById('sendWAModal').onclick = openWA;
+
+    // ================== Eventos UI ==================
+    document.getElementById('searchBtn').onclick = ()=>{
+      document.getElementById('searchBox').classList.toggle('hidden');
+      document.getElementById('search')?.focus();
+    };
+    document.getElementById('search')?.addEventListener('input', (e)=>{
+      const q = e.target.value.toLowerCase();
+      const filtered = ITEMS.filter(i=> (i.name+" "+(i.desc||'')).toLowerCase().includes(q));
+      // Render solo los que hacen match, manteniendo secciones
+      menuEl.innerHTML='';
+      SECTIONS.forEach(sec=>{
+        const group = filtered.filter(i=>i.cat===sec.id);
+        if(!group.length) return;
+        const secEl = document.createElement('section');
+        secEl.className='section';
+        secEl.innerHTML = `<h3>${sec.title}</h3>`;
+        group.forEach(it=>secEl.appendChild(itemCard(it)));
+        menuEl.appendChild(secEl);
+      })
+    });
+
+    cartBtn.onclick = ()=> cartModal.showModal();
+    document.getElementById('closeCart').onclick = ()=> cartModal.close();
+
+    // ================== Tests mínimos (consola) ==================
+    (function runTests(){
+      try{
+        console.assert(buildWAMessage()==='', 'Caso 1: carrito vacío debe devolver cadena vacía');
+        // Copia estado y prueba con un ítem
+        const backup = new Map(cart);
+        addToCart(ITEMS[0], 2); // agrega 2 de la primera pechuga
+        const msg = buildWAMessage();
+        console.assert(msg.includes('🦈') && msg.includes('Total'), 'Caso 2: mensaje debe incluir encabezado y total');
+        // restaurar
+        Object.assign(cart, backup);
+        cart.clear(); backup.forEach((v,k)=>cart.set(k,v));
+        updateCartUI();
+        console.log('%cTests OK','color:green');
+      }catch(e){ console.warn('Tests fallaron:', e); }
+    })();
+
+    // Init
+    render();
+  </script>
+</body>
+</html>
